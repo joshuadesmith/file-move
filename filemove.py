@@ -5,7 +5,7 @@ import shutil, os, argparse, time, glob
 
 # Flags for debugging  
 # - Set LIST_FILES to true to list all files in source directory
-LIST_FILES = False
+LIST_FILES = True
 
 # Base directory (location of Settlements and Client Files folders) - CHANGE BEFORE FINAL VERSION
 base = 'C:\\Users\\joshua\\Desktop\\Mock Y Drive'
@@ -89,7 +89,7 @@ def move_main(drafts, silent, log):
 		for filepath in filepaths:
 			print('\t' + filepath)
 		print("TEST RUN TO DETERMINE ACCURACY OF FILE PATH FETCHING - EXITING\n...")
-		return
+		
 
 	moved = []
 	not_moved = []
@@ -105,10 +105,18 @@ def move_main(drafts, silent, log):
 		dest = ''
 		if not os.path.isdir(posdir + '\\' + cli_name):
 			# if the exact folder isn't there, get all possible matches
-			dests = []
-			for dir in os.listdir(posdir):
-				if cli_name in dir.split('.'):
-					dests.append(dir)
+			#dests = []
+			#for dir in os.listdir(posdir):
+			#	if cli_name in dir.split('.'):
+			#		dests.append(dir)
+			fp = unixposdir + '/' + cli_name
+			dests = glob.glob('%s**' % fp)
+
+			if LIST_FILES:
+				print("Possible destinations:")
+				for d in dests:
+					print("\t" + d)
+				continue;
 
 			if len(dests) == 1:
 				dest = posdir + '\\' + dests[0]	# if only one is found, then use it
