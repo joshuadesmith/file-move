@@ -8,10 +8,10 @@ import shutil, os, argparse, time, glob
 LIST_FILES = True
 
 # Base directory (location of Settlements and Client Files folders) - CHANGE BEFORE FINAL VERSION
-#base = 'C:\\Users\\joshua\\Desktop\\Mock Y Drive'
-#unixbase = 'C:/Users/joshua/Desktop/Mock Y Drive'
-base = 'Y:'
-unixbase = 'Y:'
+base = 'C:\\Users\\joshua\\Desktop\\Mock Y Drive'
+unixbase = 'C:/Users/joshua/Desktop/Mock Y Drive'
+#base = 'Y:'
+#unixbase = 'Y:'
 
 # Source directory - 'Documents to Move to Client Files (Executed)' folder
 src = base + '\\Settlements\\Administrative\\Affidavits\\Scanned Affidavits.Releases to Separate\\'
@@ -214,7 +214,7 @@ def move_main_2(debug):
 	# Main loop for moving
 	if debug:
 		print("ENTER MAIN LOOP:")
-	for i in range(10):
+	for i in range(len(filenames)):
 		# Get client name from file name (testing with just one file)
 		cli_name = filenames[i].split(" - ")[0].replace('.', '')
 		dest = ''
@@ -228,6 +228,45 @@ def move_main_2(debug):
 			for pd in possible_dests:
 				print("\t" + pd)
 			print("")
+
+		if len(possible_dests) == 1:
+			dest = possible_dests[0]
+		else:
+			if debug:
+				print("!= 1 possible dests for " + filenames[i])
+			unmoved.append(filenames[i])
+			continue
+
+		# 3. Now time to determine whether the file is an aff or a release
+		# TODO: HANDLE OTHER DOCUMENT TYPES (skip for now)
+		doc_info = filenames[i].split(" - ")[1].replace(".pdf", "").split(" ")
+		if "Affidavit" in doc_info:
+			dest += '/Affidavits/Executed Affidavits'
+		elif "Release" in doc_info:
+			dest += '/Releases'
+		else:
+			if debug:
+				print("\"" + filenames[i] + "\" not moved - Unsupported document type.")
+			unmoved.append(filenames[i])
+			continue
+
+		# Final check on destination...
+		if not dest:
+			if debug:
+				print("\"" + filenames[i] + "\" not moved - Unknown error :(")
+			unmoved.append(filenames[i])
+		else:
+			# CHECK if DUPE DOC
+			if not is_dupe(dest, filenames[i]):
+				shutil.move(filepaths[i], dest)
+				moved.append(filenames[i])
+			else:
+				if debug:
+					print("\"" + filenames[i] + "\" not moved - Dupe doc")
+				unmoved.append(filenames[i])
+
+	total_time = round(time.time() - start_time, 5);
+	print("Total execution time: " + str(total_time))
 
 
 if __name__ == "__main__":
