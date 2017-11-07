@@ -8,10 +8,10 @@ import shutil, os, argparse, time, glob
 LIST_FILES = True
 
 # Base directory (location of Settlements and Client Files folders) - CHANGE BEFORE FINAL VERSION
-base = 'C:\\Users\\joshua\\Desktop\\Mock Y Drive'
-unixbase = 'C:/Users/joshua/Desktop/Mock Y Drive'
-# base = 'Y:'
-# unixbase = 'Y:'
+#base = 'C:\\Users\\joshua\\Desktop\\Mock Y Drive'
+#unixbase = 'C:/Users/joshua/Desktop/Mock Y Drive'
+base = 'Y:'
+unixbase = 'Y:'
 
 # Source directory - 'Documents to Move to Client Files (Executed)' folder
 src = base + '\\Settlements\\Administrative\\Affidavits\\Scanned Affidavits.Releases to Separate\\'
@@ -182,6 +182,53 @@ def move_main(drafts, silent, log):
 	if log:
 		generate_log(moved, not_moved, total_time)
 		
+# ONLY PRINTS - DOES NOT MOVE FILES
+def move_main_2(debug):
+	# Get time for speed logging
+	start_time = time.time()
+
+	# Set source directory depending on drafts or executed
+	set_src()
+
+	# full file paths of pdfs to be moved
+	filepaths = glob.glob('%s/*.pdf' % unixsrc)
+
+	# standalone file names of pdfs
+	filenames = [os.path.basename(fp) for fp in filepaths]
+
+	# Print file paths (for debugging)
+	if debug:
+		print(str(len(filenames)) + ' filenames = [')
+		for file in filenames:
+			print('\t' + file + ",")
+		print("]\n") 
+		print("filepaths = [")
+		for filepath in filepaths:
+			print('\t' + filepath + ",")
+		print("]\n")
+
+	# Lists for moved and unmoved file names
+	moved = []
+	unmoved = []
+
+	# Main loop for moving
+	if debug:
+		print("ENTER MAIN LOOP:")
+	for i in range(10):
+		# Get client name from file name (testing with just one file)
+		cli_name = filenames[i].split(" - ")[0].replace('.', '')
+		dest = ''
+
+		# Get possible destinations with glob and cli_name
+		fp = unixposdir + '/' + cli_name
+		possible_dests = glob.glob('%s**' % fp)
+
+		if debug:
+			print("Possible destinations for \"" + filenames[i] + "\":")
+			for pd in possible_dests:
+				print("\t" + pd)
+			print("")
+
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Move files from \'Files to be moved\' to \'Positives\'')
@@ -190,4 +237,5 @@ if __name__ == "__main__":
 	parser.add_argument('--log', help="Use this to create a text file containing detailed results of the move", action="store_true", default=False)
 	args = parser.parse_args()
 	# print("Cmd Line Args:\n\tdrafts: " + str(args.drafts) + "\n\tsilent: " + str(args.silent) + "\n\tlog: " + str(args.log))
-	move_main(args.drafts, args.silent, args.log)
+	#move_main(args.drafts, args.silent, args.log)
+	move_main_2(True)
