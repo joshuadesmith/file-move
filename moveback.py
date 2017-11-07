@@ -1,3 +1,6 @@
+# moveback.py
+# Author: Josh Smith
+
 import os, glob, shutil
 
 # Base directory (location of Settlements and Client Files folders) - CHANGE BEFORE FINAL VERSION

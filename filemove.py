@@ -1,4 +1,5 @@
-# FileMove.py ALPHA
+# filemove.py
+# Author: Josh Smith
 
 import shutil, os, argparse, time, glob
 
