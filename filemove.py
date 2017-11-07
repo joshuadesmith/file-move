@@ -8,10 +8,10 @@ import shutil, os, argparse, time, glob
 LIST_FILES = True
 
 # Base directory (location of Settlements and Client Files folders) - CHANGE BEFORE FINAL VERSION
-base = 'C:\\Users\\joshua\\Desktop\\Mock Y Drive'
-unixbase = 'C:/Users/joshua/Desktop/Mock Y Drive'
-#base = 'Y:'
-#unixbase = 'Y:'
+#base = 'C:\\Users\\joshua\\Desktop\\Mock Y Drive'
+#unixbase = 'C:/Users/joshua/Desktop/Mock Y Drive'
+base = 'Y:'
+unixbase = 'Y:'
 
 # Source directory - 'Documents to Move to Client Files (Executed)' folder
 src = base + '\\Settlements\\Administrative\\Affidavits\\Scanned Affidavits.Releases to Separate\\'
@@ -44,14 +44,14 @@ def generate_log(moved, not_moved, run_time):
 	f.write("Ran: " + timestr + "\n")
 	f.write("Total run time: %s seconds\n\n" % run_time)
 
-	f.write(str(len(moved)) + " Files moved to positives:\n")
+	f.write(str(len(moved)) + " Files moved successfully:\n")
 	for i in range(len(moved)):
 		f.write("\t- " + moved[i] + "\n")
 	f.write("\n")
 
 	f.write(str(len(not_moved)) + " Files not moved:\n")
 	for i in range(len(not_moved)):
-		f.write("\t- " + not_moved[i] + "\n")
+		f.write("\t- " + not_moved[i][0] + " - " + not_moved[i][1] + "\n")
 	f.write("\n")
 
 
@@ -183,7 +183,7 @@ def move_main(drafts, silent, log):
 		generate_log(moved, not_moved, total_time)
 		
 # ONLY PRINTS - DOES NOT MOVE FILES
-def move_main_2(debug):
+def move_main_2(debug, log):
 	# Get time for speed logging
 	start_time = time.time()
 
@@ -231,10 +231,15 @@ def move_main_2(debug):
 
 		if len(possible_dests) == 1:
 			dest = possible_dests[0]
-		else:
+		elif len(possible_dests) < 1:
 			if debug:
-				print("!= 1 possible dests for " + filenames[i])
-			unmoved.append(filenames[i])
+				print("No possible dests for " + filenames[i])
+			unmoved.append([filenames[i], "No possible destinations found"])
+			continue
+		elif len(possible_dests) > 1:
+			if debug:
+				print("Multiple possible destinations found for " + filenames[i])
+			unmoved.append([filenames[i], "Multiple possible destinations found"])
 			continue
 
 		# 3. Now time to determine whether the file is an aff or a release
@@ -247,34 +252,37 @@ def move_main_2(debug):
 		else:
 			if debug:
 				print("\"" + filenames[i] + "\" not moved - Unsupported document type.")
-			unmoved.append(filenames[i])
+			unmoved.append([filenames[i], "Unsupported document type"])
 			continue
 
 		# Final check on destination...
 		if not dest:
 			if debug:
 				print("\"" + filenames[i] + "\" not moved - Unknown error :(")
-			unmoved.append(filenames[i])
+			unmoved.append([filenames[i], "Unknown error (uh oh...)"])
 		else:
 			# CHECK if DUPE DOC
 			if not is_dupe(dest, filenames[i]):
-				shutil.move(filepaths[i], dest)
+				#shutil.move(filepaths[i], dest)
 				moved.append(filenames[i])
 			else:
 				if debug:
 					print("\"" + filenames[i] + "\" not moved - Dupe doc")
-				unmoved.append(filenames[i])
+				unmoved.append([filenames[i], "Duplicate document"])
 
 	total_time = round(time.time() - start_time, 5);
+
+	if log:
+		generate_log(moved, unmoved, total_time)
 	print("Total execution time: " + str(total_time))
 
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Move files from \'Files to be moved\' to \'Positives\'')
-	parser.add_argument('--drafts', help="Use this to move files from drafted affs to be moved folder (currently only moves PDFs)", action="store_true", default=False)
-	parser.add_argument('--silent', help="Use this to limit feedback messages (not recommended)", action="store_true", default=False)
+	parser.add_argument('--drafts', help="Use this to move files from drafted affs to be moved folder (NOT TESTED)", action="store_true", default=False)
+	parser.add_argument('--verbose', help="Use this to show feedback messages (might be messy)", action="store_true", default=False)
 	parser.add_argument('--log', help="Use this to create a text file containing detailed results of the move", action="store_true", default=False)
 	args = parser.parse_args()
 	# print("Cmd Line Args:\n\tdrafts: " + str(args.drafts) + "\n\tsilent: " + str(args.silent) + "\n\tlog: " + str(args.log))
 	#move_main(args.drafts, args.silent, args.log)
-	move_main_2(True)
+	move_main_2(args.verbose, args.log)
