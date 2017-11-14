@@ -215,6 +215,7 @@ def move_main_2(debug, log):
     # Main loop for moving
     if debug:
         print("ENTER MAIN LOOP:")
+    dotcount = 0;
     for i in range(len(filenames)):
         # Get client name from file name (testing with just one file)
         cli_name = filenames[i].split(" - ")[0].replace('.', '')
@@ -264,15 +265,20 @@ def move_main_2(debug, log):
         else:
             # CHECK if DUPE DOC
             if not is_dupe(dest, filenames[i]):
-                #shutil.move(filepaths[i], dest)
+                shutil.move(filepaths[i], dest)
                 moved.append(filenames[i])
             else:
                 if debug:
                     print("\"" + filenames[i] + "\" not moved - Dupe doc")
                 unmoved.append([filenames[i], "Duplicate document"])
 
-    total_time = round(time.time() - start_time, 5);
+        print(". ", end="")
+        dotcount += 1;
+        if dotcount % 10 == 0:
+            print("\n", end="")
 
+    total_time = round(time.time() - start_time, 5);
+    print("")
     if log:
         generate_log(moved, unmoved, total_time)
     print("Total execution time: " + str(total_time))
